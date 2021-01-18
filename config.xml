@@ -1,0 +1,6 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<config>
+ <musicDirectory>D:\python\ProgiZaaw\venv\midis\testIN</musicDirectory>
+ <imageDirectory>D:\python\ProgiZaaw\venv\midis\testoutJG</imageDirectory>
+ <databaseName>drawMusicDB</databaseName>
+</config>
