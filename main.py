@@ -384,7 +384,7 @@ class DrawMusic(object):
 
 
     def create_midi_from_images(self):
-        model = load_model('D:/semestr5/SIwMuzyce/trainData/Ai/Ai/generator_model_final_100K.h5')
+        model = load_model('generator_model_final_100K.h5')
         mid = []
         tab = [self.PILImage1, self.PILImage2, self.PILImage3, self.PILImage4, self.PILImage5]
         for i in range(5):
