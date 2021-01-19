@@ -209,7 +209,7 @@ def prepare_train_images():
 
 
 def predict_and_postprocess(modelName, imgVector225, cut=20):
-    model = load_model(modelName)  # make it global for fast use
+    model = modelName # make it global for fast use
     vec = imgVector225
     vec = np.array(vec).reshape(1, 15 * 15)
     vec = (vec.astype(np.float32)) / 255
@@ -224,7 +224,6 @@ def predict_and_postprocess(modelName, imgVector225, cut=20):
     Y = Y * 544 + 544 - 128  # ((X_train.astype(np.float32) + 128) - 544 ) / 544
     Y = Y.astype(np.int16)
     # removes values between "cut" and -"cut"
-    cut = 100
     Y[(Y < cut) & (Y > -1 * cut)] = 0
 
     # zerowanie kolumn z ujemnym czasem
@@ -385,6 +384,7 @@ class DrawMusic(object):
 
 
     def create_midi_from_images(self):
+        model = load_model('D:/semestr5/SIwMuzyce/trainData/Ai/Ai/generator_model_final_100K.h5')
         mid = []
         tab = [self.PILImage1, self.PILImage2, self.PILImage3, self.PILImage4, self.PILImage5]
         for i in range(5):
@@ -394,8 +394,7 @@ class DrawMusic(object):
             vector = grayImgToVector(newpix)
             vector = np.round(vector)
 
-            midi = predict_and_postprocess(
-                'D:/semestr5/SIwMuzyce/trainData/Ai/Ai/generator_model_final_50K.h5', np.round(vector))
+            midi = predict_and_postprocess(model, np.round(vector), 20)
             midi2 = np.reshape(midi, (18, 18))
             MatrixToMidi(midi2, "testMidi"+str(i)+".mid")
 
