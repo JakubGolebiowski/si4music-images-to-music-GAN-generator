@@ -267,11 +267,13 @@ def predict_and_postprocess(modelName, imgVector225, cut=20):
 
     return temp
 
-def MergeMidiList(input):
+def MergeMidiList(input): #List of MidiFiles to merge
     NewMidi = MidiFile();
     NewTrack = MidiTrack();
     for i in range(len(input)):
-        NewTrack = merge_tracks([NewTrack, input[i]]);
+        for track in input[i].tracks:
+            for msg in track:
+                NewTrack.append(msg);
     NewMidi.tracks.append(NewTrack);
     return NewMidi
 
