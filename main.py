@@ -11,8 +11,10 @@ import tensorflow as tf
 import numpy as np
 from skimage.transform import resize
 from mido import MidiFile, Message, MetaMessage, MidiTrack, merge_tracks
+import mido
 from keras.models import load_model
 
+model = load_model('generator_model_final_100K.h5')
 
 # xml configuration
 config_file_name = 'config.xml'
@@ -208,8 +210,7 @@ def prepare_train_images():
         print(current_record, "/", len(records))
 
 
-def predict_and_postprocess(modelName, imgVector225, cut=20):
-    model = modelName # make it global for fast use
+def predict_and_postprocess(imgVector225, cut=20):
     vec = imgVector225
     vec = np.array(vec).reshape(1, 15 * 15)
     vec = (vec.astype(np.float32)) / 255
@@ -371,6 +372,7 @@ class DrawMusic(object):
             self.prepare_images_button.config(state=NORMAL)
             self.create_midi_button.config(state=DISABLED)
             self.is_train_mode = 1
+            self.port.close()
 
         else:
             self.toggle_button.config(relief="sunken")
@@ -381,10 +383,12 @@ class DrawMusic(object):
             self.prepare_images_button.config(state=DISABLED)
             self.create_midi_button.config(state=NORMAL)
             self.is_train_mode = 0
+            # if is not name below try check print(mido.get_output_names())
+            # pip install python-rtmidi may be required
+            self.port = mido.open_output('Microsoft GS Wavetable Synth 0')
 
 
     def create_midi_from_images(self):
-        model = load_model('generator_model_final_100K.h5')
         mid = []
         tab = [self.PILImage1, self.PILImage2, self.PILImage3, self.PILImage4, self.PILImage5]
         for i in range(5):
@@ -394,7 +398,7 @@ class DrawMusic(object):
             vector = grayImgToVector(newpix)
             vector = np.round(vector)
 
-            midi = predict_and_postprocess(model, np.round(vector), 20)
+            midi = predict_and_postprocess(np.round(vector), 20)
             midi2 = np.reshape(midi, (18, 18))
             MatrixToMidi(midi2, "testMidi"+str(i)+".mid")
 
@@ -422,30 +426,66 @@ class DrawMusic(object):
         self.PILDraw4.rectangle((0, 0, 640, 480), fill=(255, 255, 255))
         self.PILDraw5.rectangle((0, 0, 640, 480), fill=(255, 255, 255))
 
+    def play_music_from_image(self, image):
+        pix = np.array(image)
+        pix = rgb2gray(pix)
+        newpix = convert_image_to_predict(pix)
+        vector = grayImgToVector(newpix)
+        vector = np.round(vector)
+
+        midi = predict_and_postprocess(
+            np.round(vector))
+        midi2 = np.reshape(midi, (18, 18))
+        midi_sound = MatrixToMidi(midi2, "testMidi" + ".mid")
+        for msg in midi_sound.play():
+            self.port.send(msg)
+
 
     def makeSnap(self):
         if (self.snapNumber == 1):
+            self.snapNumber += 1
+            if (self.is_train_mode == 0):
+                self.play_music_from_image(self.PILImage1)
             self.img = self.PILImage1.resize((160, 120), Image.ANTIALIAS)
             self.my_img1 = ImageTk.PhotoImage(self.img)
             self.c1.create_image((0, 0), anchor=NW, image=self.my_img1)
+
         elif self.snapNumber == 2:
+            self.snapNumber += 1
+            if (self.is_train_mode == 0):
+                self.play_music_from_image(self.PILImage2)
             self.img = self.PILImage2.resize((160, 120), Image.ANTIALIAS)
             self.my_img2 = ImageTk.PhotoImage(self.img)
             self.c2.create_image((0, 0), anchor=NW, image=self.my_img2)
+
+
+
         elif self.snapNumber == 3:
+            self.snapNumber += 1
+            if (self.is_train_mode == 0):
+                self.play_music_from_image(self.PILImage3)
             self.img = self.PILImage3.resize((160, 120), Image.ANTIALIAS)
             self.my_img3 = ImageTk.PhotoImage(self.img)
             self.c3.create_image((0, 0), anchor=NW, image=self.my_img3)
+
+
         elif self.snapNumber == 4:
+            self.snapNumber += 1
+            if (self.is_train_mode == 0):
+                self.play_music_from_image(self.PILImage4)
             self.img = self.PILImage4.resize((160, 120), Image.ANTIALIAS)
             self.my_img4 = ImageTk.PhotoImage(self.img)
             self.c4.create_image((0, 0), anchor=NW, image=self.my_img4)
+
+
         elif self.snapNumber == 5:
+            self.snapNumber += 1
+            if (self.is_train_mode == 0):
+                self.play_music_from_image(self.PILImage5)
             self.img = self.PILImage5.resize((160, 120), Image.ANTIALIAS)
             self.my_img5 = ImageTk.PhotoImage(self.img)
             self.c5.create_image((0, 0), anchor=NW, image=self.my_img5)
 
-        self.snapNumber += 1
         self.clear_canvas()
 
     def good_samples(self):
