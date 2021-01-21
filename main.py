@@ -210,7 +210,7 @@ def prepare_train_images():
         print(current_record, "/", len(records))
 
 
-def predict_and_postprocess(imgVector225, cut=20):
+def predict_and_postprocess(imgVector225, cut=50):
     vec = imgVector225
     vec = np.array(vec).reshape(1, 15 * 15)
     vec = (vec.astype(np.float32)) / 255
@@ -253,14 +253,35 @@ def predict_and_postprocess(imgVector225, cut=20):
 
     # temp
     temp = temp.astype('float64')
-    for i in range(0, 18):
-        for j in range(1, 18):
-            if temp[0][i][j][0] != 0.0:
-                temp[0][i][j][0] = (temp[0][i][j][0] + 128 - 554) / 554
-                if i != 0:
-                    temp[0][i][j][0] = (((temp[0][i][j][0] + 1) / 2) * 254) - 127
-    temp[0][0] = np.abs(temp[0][0]) * 87 + 21
+    #normalizacja klawiszy <21-87>
+    max = temp[0][0][1][0]
+    min = temp[0][0][1][0]
+    #for i in range(0, 18):
+    for j in range(1, 18):
+        if max < temp[0][0][j][0]:
+            max = temp[0][0][j][0]
+        if min > temp[0][0][j][0]:
+            min = temp[0][0][j][0]
+    for j in range(1, 18):
+        temp[0][0][j][0] = (temp[0][0][j][0] - min) / (max - min) * 87+21
+
     temp[0][0][0][0] = 0.0
+    #temp = np.abs(temp)
+    #normalizacja zawartości wewnętrznej (note on-off)
+    max=temp[0][1][1][0]
+    min=temp[0][1][1][0]
+    for i in range(1,18):
+        for j in range(1,18):
+            if max<temp[0][i][j][0]:
+                max = temp[0][i][j][0]
+            if min>temp[0][i][j][0]:
+                min = temp[0][i][j][0]
+
+    for i in range(1,18):
+        for j in range(1,18):
+            temp[0][i][j][0] = (temp[0][i][j][0]-min)/(max-min)*254 - 127
+    temp[(temp < -126)] = 0
+    temp[(temp < 20) & (temp > -1*20)] = 0
     temp = temp.astype(np.int16)
 
     temp = temp.transpose()
@@ -398,7 +419,7 @@ class DrawMusic(object):
             vector = grayImgToVector(newpix)
             vector = np.round(vector)
 
-            midi = predict_and_postprocess(np.round(vector), 20)
+            midi = predict_and_postprocess(np.round(vector))
             midi2 = np.reshape(midi, (18, 18))
             MatrixToMidi(midi2, "testMidi"+str(i)+".mid")
 
