@@ -14,6 +14,8 @@ from mido import MidiFile, Message, MetaMessage, MidiTrack, merge_tracks
 import mido
 from keras.models import load_model
 
+
+
 model = load_model('generator_model_final_100K.h5')
 
 # xml configuration
@@ -280,35 +282,68 @@ def MergeMidiList(input): #List of MidiFiles to merge
 class DrawMusic(object):
     DEFAULT_PEN_SIZE = 8.0
     DEFAULT_COLOR = '#000000'
+    PRIMARY_COLOR = '#122029'
+    SECONDARY_COLOR = '#2c3e4c'
+
 
     def __init__(self):
         self.root = Tk()
+        self.root.title('DrawMusic')
+        self.root.geometry("860x758")
+        self.root.configure(borderwidth=20)
+        self.root.resizable(width=False, height=False)
 
-        self.good_button = Button(self.root, text='good<Q>', command=self.good_samples)
+
+        self.background_image = PhotoImage(file='img/bcg.png')
+        self.button_good = PhotoImage(file='img/good_button.png')
+        self.button_bad = PhotoImage(file='img/bad_button.png')
+        self.button_train = PhotoImage(file='img/switch_train.png')
+        self.button_play = PhotoImage(file='img/switch_play.png')
+        self.button_start = PhotoImage(file='img/start_button.png')
+        self.button_save = PhotoImage(file='img/save_button.png')
+        self.button_dir_images = PhotoImage(file='img/image_button.png')
+        self.button_dir_music = PhotoImage(file='img/music_button.png')
+        self.button_prepare_images = PhotoImage(file='img/prepare_images_button.png')
+
+        self.button_good_dis = PhotoImage(file='img/good_button_dis.png')
+        self.button_bad_dis = PhotoImage(file='img/bad_button_dis.png')
+        self.button_dir_images_dis = PhotoImage(file='img/image_button_dis.png')
+        self.button_dir_music_dis = PhotoImage(file='img/music_button_dis.png')
+        self.button_prepare_images_dis = PhotoImage(file='img/prepare_images_button_dis.png')
+        self.button_save_dis = PhotoImage(file='img/save_button_dis.png')
+
+
+        self.background_label = Label(self.root, image=self.background_image)
+        self.background_label.place(x=0, y=0, relwidth=1, relheight=1, bordermode=OUTSIDE)
+
+
+
+
+        self.good_button = Button(self.root, text='good<Q>', command=self.good_samples, borderwidth=0, bg=self.PRIMARY_COLOR,  image=self.button_good)
         self.good_button.grid(row=0, column=0)
 
         self.images_directory_button = Button(self.root, text='choseDirectoryForImages',
-                                              command=self.chose_directory_for_images)
+                                              command=self.chose_directory_for_images, borderwidth=0, bg=self.PRIMARY_COLOR,  image=self.button_dir_images)
         self.images_directory_button.grid(row=0, column=2)
 
         self.music_directory_button = Button(self.root, text='choseDirectoryForMusic',
-                                             command=self.chose_directory_for_music)
+                                             command=self.chose_directory_for_music, borderwidth=0, bg=self.PRIMARY_COLOR,  image=self.button_dir_music)
         self.music_directory_button.grid(row=0, column=3)
 
-        self.bad_button = Button(self.root, text='bad<E>', command=self.bad_samples)
+        self.bad_button = Button(self.root, text='bad<E>', command=self.bad_samples, borderwidth=0, bg=self.PRIMARY_COLOR,  image=self.button_bad)
         self.bad_button.grid(row=0, column=1)
 
-        self.start_button = Button(self.root, text='START', command=self.start_music_playing)
-        self.start_button.grid(row=0, column=4)
+        self.start_button = Button(self.root, text='START', command=self.start_music_playing, borderwidth=0, bg=self.PRIMARY_COLOR,  image=self.button_start)
+        self.start_button.grid(row=1, column=2)
 
-        self.prepare_images_button = Button(self.root, text='Prepare Images', command=prepare_train_images)
-        self.prepare_images_button.grid(row=1, column=0)
+        self.prepare_images_button = Button(self.root, text='Prepare Images', command=prepare_train_images, borderwidth=0, bg=self.PRIMARY_COLOR,  image=self.button_prepare_images)
+        self.prepare_images_button.grid(row=0, column=4)
 
-        self.create_midi_button = Button(self.root, text='Convert to midi', state=DISABLED ,command=self.create_midi_from_images)
+        self.create_midi_button = Button(self.root, text='Convert to midi', state=DISABLED ,command=self.create_midi_from_images, borderwidth=0, bg=self.PRIMARY_COLOR,  image=self.button_save_dis)
         self.create_midi_button.grid(row=1, column=1)
 
-        self.toggle_button = Button(self.root, text='Change mode', command=self.toggle)
-        self.toggle_button.grid(row=1, column=2)
+        self.toggle_button = Button(self.root, text='Change mode', command=self.toggle, borderwidth=0, bg=self.PRIMARY_COLOR,  image=self.button_train)
+        self.toggle_button.grid(row=1, column=3, pady=10)
 
         self.PILImage1 = Image.new("RGB", (640, 480), color=(255, 255, 255))
         self.PILDraw1 = ImageDraw.Draw(self.PILImage1)
@@ -325,23 +360,25 @@ class DrawMusic(object):
         self.PILImage5 = Image.new("RGB", (640, 480), color=(255, 255, 255))
         self.PILDraw5 = ImageDraw.Draw(self.PILImage5)
 
-        self.c = Canvas(self.root, bg='white', width=640, height=480)
+        self.c = Canvas(self.root, bg='white', width=640, height=480,  highlightthickness=7, highlightbackground=self.SECONDARY_COLOR)
         self.c.grid(row=2, columnspan=5)
-        self.c1 = Canvas(self.root, bg='white', width=160, height=120)
+        self.c1 = Canvas(self.root, bg='white', width=160, height=120, highlightthickness=3, highlightbackground=self.SECONDARY_COLOR)
         self.c1.grid(row=3, columnspan=1, column=0)
-        self.c2 = Canvas(self.root, bg='white', width=160, height=120)
+        self.c2 = Canvas(self.root, bg='white', width=160, height=120, highlightthickness=3, highlightbackground=self.SECONDARY_COLOR)
         self.c2.grid(row=3, columnspan=1, column=1)
-        self.c3 = Canvas(self.root, bg='white', width=160, height=120)
+        self.c3 = Canvas(self.root, bg='white', width=160, height=120, highlightthickness=3, highlightbackground=self.SECONDARY_COLOR)
         self.c3.grid(row=3, columnspan=1, column=2)
-        self.c4 = Canvas(self.root, bg='white', width=160, height=120)
+        self.c4 = Canvas(self.root, bg='white', width=160, height=120, highlightthickness=3, highlightbackground=self.SECONDARY_COLOR)
         self.c4.grid(row=3, columnspan=1, column=3)
-        self.c5 = Canvas(self.root, bg='white', width=160, height=120)
+        self.c5 = Canvas(self.root, bg='white', width=160, height=120, highlightthickness=3, highlightbackground=self.SECONDARY_COLOR)
         self.c5.grid(row=3, columnspan=1, column=4)
+
 
         self.setup()
         self.root.mainloop()
 
     def setup(self):
+
         self.is_train_mode = 1
 
         self.old_x = 0
@@ -364,18 +401,30 @@ class DrawMusic(object):
 
     def toggle(self):
         if self.toggle_button.config('relief')[-1] == 'sunken':
-            self.toggle_button.config(relief="raised")
-            self.bad_button.config(state=NORMAL)
-            self.good_button.config(state=NORMAL)
-            self.images_directory_button.config(state=NORMAL)
-            self.music_directory_button.config(state=NORMAL)
-            self.prepare_images_button.config(state=NORMAL)
-            self.create_midi_button.config(state=DISABLED)
+
+            # self.button_good_dis = PhotoImage(file='but-1_dis.png')
+            # self.button_bad_dis = PhotoImage(file='bad_button_dis.png')
+            # self.button_dir_images_dis = PhotoImage(file='image_button_dis.png')
+            # self.button_dir_music_dis = PhotoImage(file='music_button_dis.png')
+            # self.button_prepare_images_dis = PhotoImage(file='prepare_images_button_dis.png')
+            self.toggle_button.config(relief="raised", image=self.button_train)
+            self.bad_button.config(state=NORMAL, image=self.button_bad)
+            self.good_button.config(state=NORMAL, image=self.button_good)
+            self.images_directory_button.config(state=NORMAL, image=self.button_dir_images)
+            self.music_directory_button.config(state=NORMAL, image=self.button_dir_music)
+            self.prepare_images_button.config(state=NORMAL, image=self.button_prepare_images)
+            self.create_midi_button.config(state=DISABLED, image=self.button_save_dis)
             self.is_train_mode = 1
             self.port.close()
 
         else:
-            self.toggle_button.config(relief="sunken")
+            self.toggle_button.config(relief="sunken", image=self.button_play)
+            self.bad_button.config(state=NORMAL, image=self.button_bad_dis)
+            self.good_button.config(state=NORMAL, image=self.button_good_dis)
+            self.images_directory_button.config(state=NORMAL, image=self.button_dir_images_dis)
+            self.music_directory_button.config(state=NORMAL, image=self.button_dir_music_dis)
+            self.prepare_images_button.config(state=NORMAL, image=self.button_prepare_images_dis)
+            self.create_midi_button.config(state=DISABLED, image=self.button_save)
             self.bad_button.config(state=DISABLED)
             self.good_button.config(state=DISABLED)
             self.images_directory_button.config(state=DISABLED)
